@@ -35,13 +35,19 @@ class EarthquakeTracker:
         for eq in earthquakes:
             properties = eq['properties']
             geometry = eq['geometry']
+            
+            # Handle potential None values for magnitude
+            magnitude = properties.get('mag')
+            if magnitude is None:
+                magnitude = float('nan')
+                
             processed_data.append({
                 'time': datetime.fromtimestamp(properties['time'] / 1000.0),
-                'magnitude': properties['mag'],
-                'latitude': geometry['coordinates'][1],
-                'longitude': geometry['coordinates'][0],
+                'magnitude': magnitude,
+                'latitude': geometry['coordinates'][1],  # Latitude is the second element
+                'longitude': geometry['coordinates'][0], # Longitude is the first element
                 'depth': geometry['coordinates'][2],
-                'place': properties['place']
+                'place': properties.get('place', 'Unknown location')
             })
         return pd.DataFrame(processed_data)
     
@@ -49,10 +55,14 @@ class EarthquakeTracker:
         """
         Update historical earthquake data for the last 30 days
         """
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=30)
-        earthquakes = self.fetch_earthquakes(start_date, end_date)
-        self.historical_data = self.process_earthquake_data(earthquakes)
+        try:
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=30)
+            earthquakes = self.fetch_earthquakes(start_date, end_date)
+            self.historical_data = self.process_earthquake_data(earthquakes)
+            print(f"Updated historical data: {len(earthquakes)} earthquakes found")
+        except Exception as e:
+            print(f"Error updating historical data: {e}")
         
     def predict_next_earthquake(self):
         """
