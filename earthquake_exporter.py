@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 
 class EarthquakeDataExporter:
-    def __init__(self, base_url='http://127.0.0.1'):
+    def __init__(self, base_url='http://127.0.0.1:5000'):
         self.base_url = base_url
         self.output_dir = 'earthquake_data'
         
@@ -26,9 +26,9 @@ class EarthquakeDataExporter:
         if data:
             try:
                 df = pd.DataFrame(data)
-                # Extract latitude and longitude from coordinates
-                df['latitude'] = df['coordinates'].apply(lambda x: x[0])
-                df['longitude'] = df['coordinates'].apply(lambda x: x[1])
+                # Extract latitude and longitude from coordinates - fix the order
+                df['latitude'] = df['coordinates'].apply(lambda x: x[1])
+                df['longitude'] = df['coordinates'].apply(lambda x: x[0])
                 df.drop('coordinates', axis=1, inplace=True)
                 
                 filename = os.path.join(
