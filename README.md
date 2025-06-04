@@ -12,18 +12,23 @@ This application tracks real-time earthquake data and provides basic predictions
 
 ## Installation
 
+### Standard Installation
 1. Clone this repository
 2. Install requirements:
    ```
    pip install -r requirements.txt
    ```
+3. Run the application:
+   ```
+   python app.py
+   ```
 
-## Usage
-
-Run the application:
-```
-python app.py
-```
+### Docker Installation
+1. Clone this repository
+2. Build and run with Docker Compose:
+   ```
+   docker-compose up -d
+   ```
 
 ## API Endpoints
 
