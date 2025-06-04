@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+my_env/
+earthquake_data/
+.git/
+.gitignore
