@@ -3,6 +3,7 @@ from earthquake_tracker import EarthquakeTracker
 from datetime import datetime
 import threading
 import time
+import pandas as pd
 
 app = Flask(__name__)
 tracker = EarthquakeTracker()
@@ -10,7 +11,12 @@ tracker = EarthquakeTracker()
 def background_update():
     """Background task to update earthquake data periodically"""
     while True:
-        tracker.update_historical_data()
+        try:
+            print(f"[{datetime.now()}] Updating earthquake data...")
+            tracker.update_historical_data()
+            print(f"[{datetime.now()}] Update complete")
+        except Exception as e:
+            print(f"[{datetime.now()}] Error in background update: {e}")
         time.sleep(3600)  # Update every hour
 
 @app.route('/')
@@ -27,16 +33,19 @@ def home():
 @app.route('/recent-earthquakes')
 def recent_earthquakes():
     """Get recent earthquake data"""
-    if tracker.historical_data is None:
+    if tracker.historical_data is None or tracker.historical_data.empty:
         return jsonify({'error': 'No data available'}), 404
     
-    recent_quakes = tracker.historical_data.sort_values('time', ascending=False).head(10)
-    return jsonify([{
-        'time': str(row['time']),
-        'magnitude': row['magnitude'],
-        'location': row['place'],
-        'coordinates': [row['latitude'], row['longitude']]
-    } for _, row in recent_quakes.iterrows()])
+    try:
+        recent_quakes = tracker.historical_data.sort_values('time', ascending=False).head(10)
+        return jsonify([{
+            'time': str(row['time']),
+            'magnitude': float(row['magnitude']) if pd.notna(row['magnitude']) else None,
+            'location': row['place'],
+            'coordinates': [float(row['latitude']), float(row['longitude'])]
+        } for _, row in recent_quakes.iterrows()])
+    except Exception as e:
+        return jsonify({'error': f'Error processing earthquake data: {str(e)}'}), 500
 
 @app.route('/prediction')
 def get_prediction():
@@ -60,4 +69,4 @@ if __name__ == '__main__':
     tracker.update_historical_data()
     
     # Start Flask app
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
